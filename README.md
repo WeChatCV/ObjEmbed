@@ -91,6 +91,26 @@ python infer_objembed.py --objembed_checkpoint /PATH/TO/OBJEMBED --wedetect_uni_
 
 
 ## 📏 Evaluation
+#### 📍 Evaluation Dataset Preparation
+
+You can download the datasets from the following links:
+- COCO: https://cocodataset.org/#home
+- LVIS: https://www.lvisdataset.org/
+- COCO-O: https://github.com/alibaba/easyrobust/tree/main/benchmarks/coco_o
+- odinw13: https://huggingface.co/GLIPModel/GLIP/tree/main/odinw_35
+- fg-ovd: https://github.com/lorebianchi98/FG-OVD/tree/main/benchmarks
+- d3: https://github.com/shikras/d-cube?tab=readme-ov-file#download
+- refcoco/+/g: https://huggingface.co/datasets/fushh7/eval_refcoco
+- sorce_1k: https://huggingface.co/datasets/lcxrocks/sorce-1k
+- reircoco: https://huggingface.co/datasets/haoxiangzhao/REIRCOCO
+- ilias: https://huggingface.co/datasets/vrg-prague/ilias
+- sharegpt-4v: https://github.com/ShareGPT4Omni/ShareGPT4V/blob/master/docs/Data.md
+- dci: https://github.com/facebookresearch/DCI
+- coco_caption_2017: https://cocodataset.org/#home
+- flickr30k: https://huggingface.co/datasets/nlphuji/flickr30k
+- coco_cn: We have provided.
+- flickr30k_cn: https://github.com/li-xirong/cross-lingual-cap
+
 #### 📍 Visual Grounding
 ```
 cd eval_grounding
