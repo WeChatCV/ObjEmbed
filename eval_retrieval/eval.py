@@ -18,7 +18,7 @@ import numpy as np
 
 ds_collections = {
     'sorce_1k': {
-        'ann_path': 'datasets/sorce-1k/dataset.jsonl',
+        'ann_path': 'sorce_1k_dataset.jsonl',
         'visual_prompt': 'Locate the specific object being described by analyzing its unique instance-level attributes, its spatial position, and its relationship with surrounding objects. ',
         'text_prompt': "Find an object that matches the given caption. %s",
         'img_path': 'datasets/sorce-1k/full_res/',
@@ -39,14 +39,14 @@ ds_collections = {
         'proposals': 'datasets/wedetect_ref/eval_proposals/coco_cn_proposals_all.json',
     },
     'flickr30k': {
-        'ann_path': 'datasets/flickr/flickr30k_test.json',
+        'ann_path': 'flickr30k_test.json',
         'visual_prompt': 'Detect all objects in the image by identifying the common visual features of their respective classes. ',
         'text_prompt': "Find an image that matches the given caption. %s",
         'img_path': 'datasets/flickr/flickr/',
         'proposals': 'datasets/wedetect_ref/eval_proposals/flickr30k_proposals_all.json',
     },
     'flickr30k_cn': {
-        'ann_path': 'datasets/flickr/flickr30k_cn_test_texts.jsonl',
+        'ann_path': 'flickr30k_cn_test_texts.jsonl',
         'visual_prompt': 'Detect all objects in the image by identifying the common visual features of their respective classes. ',
         'text_prompt': "Find an image that matches the given caption. %s",
         'img_path': 'datasets/flickr/flickr/',
@@ -60,7 +60,7 @@ ds_collections = {
         'proposals': 'datasets/wedetect_ref/eval_proposals/sharegpt4v_proposals_all.json',
     },
     'dci': {
-        'ann_path': 'datasets/DCI/anno.json',
+        'ann_path': 'dci_anno.json',
         'visual_prompt': 'Locate the specific object being described by analyzing its unique instance-level attributes, its spatial position, and its relationship with surrounding objects. ',
         'text_prompt': "Find an image that matches the given caption. %s",
         'img_path': 'datasets/DCI/images/',
@@ -74,14 +74,14 @@ ds_collections = {
         'proposals': 'datasets/wedetect_ref/eval_proposals/reircoco_proposals_all.json',
     },
     'ilias': {
-        'ann_path': 'datasets/ILIAS/ilias_data.json',
+        'ann_path': 'ilias_data.json',
         'visual_prompt': 'Locate the specific object being described by analyzing its unique instance-level attributes, its spatial position, and its relationship with surrounding objects. ',
         'text_prompt': "Find an image that matches the given caption. %s",
         'img_path': 'datasets/ILIAS/',
         'proposals': 'datasets/wedetect_ref/eval_proposals/ilias_proposals_all.json',
     },
     'ilias_i2i': {
-        'ann_path': 'datasets/ILIAS/ilias_data.json',
+        'ann_path': 'ilias_data.json',
         'visual_prompt': 'Locate the specific object being described by analyzing its unique instance-level attributes, its spatial position, and its relationship with surrounding objects. ',
         'text_prompt': "Find an image that matches the given caption. %s",
         'img_path': 'datasets/ILIAS/',
