@@ -48,6 +48,8 @@ class TrainingArguments(transformers.TrainingArguments):
     use_two_tokens: int = 0
     use_two_captions: bool = False
 
+    dataset_path: str = ""
+
 
 
 class GroupedBatchSampler(Sampler[List[int]]):
@@ -611,26 +613,24 @@ GENERAL_PROMPT = "Represent each object into a single token. "
 
 class LazySupervisedDataset(Dataset):
 
-    def __init__(self, data_path: str, dataset_name, dataset_type, proposal_path, per_image_train_text_batch_size, per_device_train_batch_size, use_task_prompt=False, use_global_caption=False, use_two_captions=False, use_two_tokens=0):
+    def __init__(self, dataset_path: str, data_path: str, dataset_name, dataset_type, proposal_path, per_image_train_text_batch_size, per_device_train_batch_size, use_task_prompt=False, use_global_caption=False, use_two_captions=False, use_two_tokens=0):
         super(LazySupervisedDataset, self).__init__()
         if data_path.endswith('.json'):
-            with open(data_path, "r") as file:
+            with open(os.path.join(dataset_path, data_path), "r") as file:
                 self.list_data_dict = json.load(file)
         elif data_path.endswith('.jsonl'):
-            with open(data_path, "r") as file:
+            with open(os.path.join(dataset_path, data_path), "r") as file:
                 self.list_data_dict = [json.loads(line) for line in file]
-        if dataset_name == 'self_sam_list':
-            for i in range(len(self.list_data_dict)):
-                for obj in self.list_data_dict[i]['objects']:
-                    obj['label'] = obj['label'][0]
 
         if type(proposal_path) == list:
             temp_proposals = {}
             for path in proposal_path:
-                temp_proposals.update(json.load(open(path, "r")))
+                temp_proposals.update(json.load(open(os.path.join(dataset_path, path), "r")))
             self.proposals = temp_proposals
         else:
-            self.proposals = json.load(open(proposal_path, "r"))
+            self.proposals = json.load(open(os.path.join(dataset_path, proposal_path), "r"))
+            
+        self.dataset_path = dataset_path
         self.dataset_type = dataset_type
         self.dataset_name = dataset_name
         self.per_image_train_text_batch_size = per_image_train_text_batch_size
@@ -643,8 +643,8 @@ class LazySupervisedDataset(Dataset):
             total_texts = LVIS_CLASSES
             class_weights = get_fed_loss_cls_weights()
         elif self.dataset_name == 'human_ref':
-            with open('datasets/processed_reircoco_data.json') as f:
-                temp_list_data_dict = json.load(f)
+            with open(os.path.join(dataset_path, 'ObjEmbed_training_data/annotations/processed_reircoco_data_with_caption.jsonl')) as f:
+                temp_list_data_dict = [json.loads(line) for line in f]
             total_texts = set()
             for source in temp_list_data_dict:
                 for objects in source['objects']:
@@ -701,7 +701,7 @@ class LazySupervisedDataset(Dataset):
         source = copy.deepcopy(self.list_data_dict[i])
         # print(self.dataset_name)
         # open image
-        image = Image.open(source["image"]).convert("RGB")
+        image = Image.open((os.path.join(self.dataset_path, source["image"]))).convert("RGB")
 
         # load proposal
         proposals = torch.tensor(self.proposals[source["image"]]).float().reshape(-1, 4)
@@ -994,34 +994,35 @@ if __name__ == "__main__":
     # Prepare dataset
     if training_args.dataset_name == 'mixture_with_caption':
         dataset_files = [
-            ['datasets/processed_FineCops_Ref_data_with_caption.jsonl', 'FineCops_Ref', 'rec', 'datasets/FineCops_Ref_proposals.json'],
-            ['datasets/processed_grefcoco_data_with_caption.jsonl', 'grefcoco', 'rec', 'datasets/grefcoco_proposals.json'],
-            ['datasets/processed_human_ref_data_with_caption.jsonl', 'human_ref', 'rec', 'datasets/human_ref_proposals.json'],
-            ['datasets/processed_refcoco_data_with_caption.jsonl', 'refcoco', 'rec', 'datasets/refcoco_proposals.json'],
-            ['datasets/processed_reircoco_data_with_caption.jsonl', 'reircoco', 'rec', 'datasets/reircoco_proposals.json'],
-            ['datasets/processed_Ref_L4_data_with_caption.jsonl', 'Ref_L4', 'rec', 'datasets/Ref_L4_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_FineCops_Ref_data_with_caption.jsonl', 'FineCops_Ref', 'rec', 'ObjEmbed_training_data/proposals/FineCops_Ref_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_grefcoco_data_with_caption.jsonl', 'grefcoco', 'rec', 'ObjEmbed_training_data/proposals/grefcoco_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_human_ref_data_with_caption.jsonl', 'human_ref', 'rec', 'ObjEmbed_training_data/proposals/human_ref_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_refcoco_data_with_caption.jsonl', 'refcoco', 'rec', 'ObjEmbed_training_data/proposals/refcoco_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_reircoco_data_with_caption.jsonl', 'reircoco', 'rec', 'ObjEmbed_training_data/proposals/reircoco_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_Ref_L4_data_with_caption.jsonl', 'Ref_L4', 'rec', 'ObjEmbed_training_data/proposals/Ref_L4_proposals.json'],
 
-            ['datasets/processed_refcoco_data_with_caption.jsonl', 'refcocov2', 'rec', 'datasets/refcoco_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_refcoco_data_with_caption.jsonl', 'refcocov2', 'rec', 'ObjEmbed_training_data/proposals/refcoco_proposals.json'],
 
-            ['datasets/processed_v3det_data_with_caption.jsonl', 'v3det', 'detection', 'datasets/v3det_proposals.json'],
-            ['datasets/processed_coco_data_with_caption.jsonl', 'coco', 'detection', 'datasets/coco_proposals.json'],
-            ['datasets/processed_lvis_data_with_caption.jsonl', 'lvis', 'detection', 'datasets/lvis_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_v3det_data_with_caption.jsonl', 'v3det', 'detection', 'ObjEmbed_training_data/proposals/v3det_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_coco_data_with_caption.jsonl', 'coco', 'detection', 'ObjEmbed_training_data/proposals/coco_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_lvis_data_with_caption.jsonl', 'lvis', 'detection', 'ObjEmbed_training_data/proposals/lvis_proposals.json'],
 
-            ['datasets/processed_dam_LVIS_v1_with_caption.jsonl', 'dam_LVIS', 'rec', 'datasets/coco_proposals.json'],
-            ['datasets/processed_dam_OpenImages_v1_with_caption.jsonl', 'dam_OpenImages', 'rec', 'datasets/OpenImages_proposals.json'],
-            ['datasets/processed_sam_300k_with_captionv2.jsonl', 'self_sam_list', 'rec', 'datasets/self_sam_300k_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_dam_LVIS_v1_with_caption.jsonl', 'dam_LVIS', 'rec', 'ObjEmbed_training_data/proposals/coco_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_dam_OpenImages_v1_with_caption.jsonl', 'dam_OpenImages', 'rec', 'ObjEmbed_training_data/proposals/OpenImages_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_sam_300k_with_captionv2.jsonl', 'self_sam_list', 'rec', 'ObjEmbed_training_data/proposals/self_sam_300k_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_objects365_500k_merged_with_caption.jsonl', 'objects365', 'rec', 'ObjEmbed_training_data/proposals/objects365_500k_proposals.json'],
 
-            ['datasets/processed_fgovd_1_attributes_with_caption.jsonl', 'fgovd_1_attributes', 'rec', 'datasets/fgovd_1_attributes_proposals.json'],
-            ['datasets/processed_fgovd_2_attributes_with_caption.jsonl', 'fgovd_2_attributes', 'rec', 'datasets/fgovd_2_attributes_proposals.json'],
-            ['datasets/processed_fgovd_3_attributes_with_caption.jsonl', 'fgovd_3_attributes', 'rec', 'datasets/fgovd_3_attributes_proposals.json'],
-            ['datasets/processed_fgovd_color_with_caption.jsonl', 'fgovd_color', 'rec', 'datasets/fgovd_color_proposals.json'],
-            ['datasets/processed_fgovd_material_with_caption.jsonl', 'fgovd_material', 'rec', 'datasets/fgovd_material_proposals.json'],
-            ['datasets/processed_fgovd_pattern_with_caption.jsonl', 'fgovd_pattern', 'rec', 'datasets/fgovd_pattern_proposals.json'],
-            ['datasets/processed_fgovd_shuffle_negatives_with_caption.jsonl', 'fgovd_shuffle_negatives', 'rec', 'datasets/fgovd_shuffle_negatives_proposals.json'],
-            ['datasets/processed_fgovd_transparency_with_caption.jsonl', 'fgovd_transparency', 'rec', 'datasets/fgovd_transparency_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_fgovd_1_attributes_with_caption.jsonl', 'fgovd_1_attributes', 'rec', 'ObjEmbed_training_data/proposals/fgovd_1_attributes_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_fgovd_2_attributes_with_caption.jsonl', 'fgovd_2_attributes', 'rec', 'ObjEmbed_training_data/proposals/fgovd_2_attributes_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_fgovd_3_attributes_with_caption.jsonl', 'fgovd_3_attributes', 'rec', 'ObjEmbed_training_data/proposals/fgovd_3_attributes_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_fgovd_color_with_caption.jsonl', 'fgovd_color', 'rec', 'ObjEmbed_training_data/proposals/fgovd_color_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_fgovd_material_with_caption.jsonl', 'fgovd_material', 'rec', 'ObjEmbed_training_data/proposals/fgovd_material_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_fgovd_pattern_with_caption.jsonl', 'fgovd_pattern', 'rec', 'ObjEmbed_training_data/proposals/fgovd_pattern_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_fgovd_shuffle_negatives_with_caption.jsonl', 'fgovd_shuffle_negatives', 'rec', 'ObjEmbed_training_data/proposals/fgovd_shuffle_negatives_proposals.json'],
+            ['ObjEmbed_training_data/annotations/processed_fgovd_transparency_with_caption.jsonl', 'fgovd_transparency', 'rec', 'ObjEmbed_training_data/proposals/fgovd_transparency_proposals.json'],
         ]
     
-    datasets = [LazySupervisedDataset(file[0], file[1], file[2], file[3], training_args.per_image_train_text_batch_size, training_args.per_device_train_batch_size, use_task_prompt=training_args.use_task_prompt, use_global_caption=training_args.use_global_caption, use_two_tokens=training_args.use_two_tokens, use_two_captions=training_args.use_two_captions) for file in dataset_files]
+    datasets = [LazySupervisedDataset(training_args.dataset_path, file[0], file[1], file[2], file[3], training_args.per_image_train_text_batch_size, training_args.per_device_train_batch_size, use_task_prompt=training_args.use_task_prompt, use_global_caption=training_args.use_global_caption, use_two_tokens=training_args.use_two_tokens, use_two_captions=training_args.use_two_captions) for file in dataset_files]
     concat_dataset = ConcatDataset(datasets)
     # prepared_dataset = [prepare_dataset(example) for example in dataset['train']]
 
