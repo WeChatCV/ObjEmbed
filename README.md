@@ -24,6 +24,8 @@ ObjEmbed enjoys three key properties:
 Superior performance on 18 diverse benchmarks demonstrates its strong semantic discrimination.
 
 ## 🔥 Update
+- [2026.5.18] Release the training data.
+- [2026.5.1] Our paper was accepted by ICML2026.
 - [2026.2.3] Release the code and paper.
 
 ## 📈 Experimental Results
@@ -137,6 +139,61 @@ torchrun --nproc-per-node=8 --nnodes=1 --node_rank=0 --master_addr="127.0.0.1" -
 - Please change the dataset path in Line `19-90` of `eval_retrieval/eval.py`.
 - For each dataset, users should first extract proposals for each image and save them as json files. You can use `generate_proposal.py` as an example code. We provide refcoco proposals at [here](https://huggingface.co/datasets/fushh7/eval_refcoco).
 
+
+## 🚀 Training
+
+```
+｜--datasets
+｜  |--coco
+｜  |  |--annotations
+｜  |  |--train2017
+｜  |  |--val2017
+｜  |  |--train2014
+｜  |  |--val2014
+｜  |--GQA
+｜  |  |--images
+｜  |--V3Det
+｜  |  |--train
+｜  |  |  |--images
+｜  |  |  |  |--a00013718
+｜  |--OpenImagesV6
+｜  |  |--train_image
+｜  |--Ref-CoT-45k
+｜  |  |--images
+｜  |--Object365
+｜  |  |--train
+｜  |  |  |--patch1
+｜  |  |  |--patch2
+｜  |--Ref-L4
+｜  |  |--images
+｜  |--sa_1b
+｜  |  |--sa_000112
+｜  |  |--sa_000124
+｜  |--ObjEmbed_training_data
+｜  |  |--annotations
+｜  |  |--proposals
+```
+
+- Please organize the datasets according to the directory structure outlined above. The datasets can be downloaded from the following links:
+    - COCO: https://cocodataset.org/#home
+    - GQA: https://downloads.cs.stanford.edu/nlp/data/gqa/images.zip
+    - V3Det: https://huggingface.co/datasets/yhcao/V3Det_Backup
+    - OpenImagesV6: https://huggingface.co/datasets/nvidia/describe-anything-dataset/tree/main/OpenImages/images (You can only download the subset of images from this link)
+    - Ref-CoT-45k: https://huggingface.co/datasets/IDEA-Research/HumanRef-CoT-45k
+    - Object365: https://huggingface.co/datasets/guozonghao96/objects365
+    - Ref-L4: https://huggingface.co/datasets/JierunChen/Ref-L4
+    - SA-1B: https://huggingface.co/datasets/Aber-r/SA-1B_backup (We only use images from the following tar files: 'sa_000112.tar', 'sa_000124.tar', 'sa_000130.tar', 'sa_000149.tar', 'sa_000155.tar', 'sa_000165.tar', 'sa_000166.tar', 'sa_000167.tar', 'sa_000172.tar', 'sa_000180.tar', 'sa_000189.tar', 'sa_000199.tar', 'sa_000221.tar', 'sa_000233.tar', 'sa_000288.tar', 'sa_000310.tar', 'sa_000316.tar', 'sa_000331.tar', 'sa_000339.tar', 'sa_000344.tar', 'sa_000348.tar', 'sa_000350.tar', 'sa_000352.tar', 'sa_000386.tar', 'sa_000410.tar', 'sa_000414.tar', 'sa_000417.tar', 'sa_000420.tar')
+    - ObjEmbed_training_data: https://huggingface.co/datasets/fushh7/ObjEmbed_training_data (This dataset contains our collected annotations and object proposals.)
+- Due to licensing restrictions, we are unable to release the 200k self-crawled images. Instead, we provide 500k annotations on the Object365 dataset, which yield comparable performance.
+- Our models are finetuned from the stage-2 checkpoints of WeDetect-Ref. Please download them from the following links:
+    - WeDetect-Ref-2B-stage2: https://huggingface.co/fushh7/WeDetect-Ref-2B-stage2
+    - WeDetect-Ref-4B-stage2: https://huggingface.co/fushh7/WeDetect-Ref-4B-stage2
+- Training commands:
+    ```
+    bash scripts/train.sh
+    ```
+    - Please update the dataset and checkpoint paths in the script accordingly.
+    - Training is conducted on 16 or 32 GPUs. GPUs with at least 40GB memory are recommended.
 
 ## 🙏 Acknowledgement
 
